@@ -1,7 +1,7 @@
 {
-  "name": "@tapico/node-openfeature",
+  "name": "@tapico/node-openfeature-posthog",
   "version": "0.0.1",
-  "description": "OpenFeature provider for feature flags",
+  "description": "OpenFeature provider for the PostHog feature flags solution",
   "typings": "dist/index.d.ts",
   "exports": {
     ".": {
