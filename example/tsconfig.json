@@ -1,0 +1,15 @@
+{
+  "compilerOptions": {
+    "lib": ["es2022", "dom"],
+    "types": ["jest", "node"],
+    "typeRoots": ["node_modules"],
+    "outDir": "dist",
+    "stripInternal": true,
+    "target": "es2022",
+    "module": "ES2022",
+    "moduleResolution": "node",
+    "forceConsistentCasingInFileNames": true,
+    "importsNotUsedAsValues": "error"
+  },
+  "include": ["index.ts"]
+}

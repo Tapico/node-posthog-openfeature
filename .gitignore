@@ -1,0 +1,11 @@
+.build
+.rts2_cache
+.history/
+build
+dist/
+coverage/
+web_modules
+node_modules
+src/**/*.js
+src/**/*.js.map
+junit.xml
