@@ -1,6 +1,7 @@
 .build
 .rts2_cache
 .history/
+.npmrc
 build
 dist/
 coverage/
