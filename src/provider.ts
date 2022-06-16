@@ -1,15 +1,17 @@
-import type {
+import {
   ContextTransformer,
   EvaluationContext,
   FlagEvaluationOptions,
   Provider,
   ResolutionDetails,
   ProviderOptions,
+  TypeMismatchError,
+  ParseError,
+  StandardResolutionReasons,
 } from '@openfeature/nodejs-sdk'
 import PostHog from 'posthog-node'
 import * as undici from 'undici'
-import { ParseError, TypeMismatchError } from './errors'
-import { FlagError, FlagResolution } from './types'
+import { FlagError } from './types'
 import { VERSION } from './VERSION'
 
 type Groups = Record<string, string | number>
@@ -34,7 +36,7 @@ type PosthogInfo = {
 }
 
 /**
- *
+ * PostHog provider options
  */
 export interface PostHogProviderOptions extends ProviderOptions<PosthogInfo> {
   /**
@@ -109,7 +111,7 @@ export class PostHogProvider implements Provider {
     flagKey: string,
     defaultValue: boolean,
     transformedContext: EvaluationContext,
-    _options: FlagEvaluationOptions | undefined,
+    _options: FlagEvaluationOptions | undefined
   ): Promise<ResolutionDetails<boolean>> {
     const details = await this.evaluate(flagKey, defaultValue, transformedContext)
     if (typeof details.value === 'boolean') {
@@ -130,7 +132,7 @@ export class PostHogProvider implements Provider {
     flagKey: string,
     defaultValue: string,
     transformedContext: EvaluationContext,
-    _options: FlagEvaluationOptions | undefined,
+    _options: FlagEvaluationOptions | undefined
   ): Promise<ResolutionDetails<string>> {
     const details = await this.evaluate(flagKey, defaultValue, transformedContext)
     if (typeof details.value === 'string') {
@@ -151,7 +153,7 @@ export class PostHogProvider implements Provider {
     flagKey: string,
     defaultValue: number,
     transformedContext: EvaluationContext,
-    _options: FlagEvaluationOptions | undefined,
+    _options: FlagEvaluationOptions | undefined
   ): Promise<ResolutionDetails<number>> {
     const details = await this.evaluate(flagKey, defaultValue, transformedContext)
     if (typeof details.value === 'number') {
@@ -172,7 +174,7 @@ export class PostHogProvider implements Provider {
     flagKey: string,
     defaultValue: U,
     transformedContext: EvaluationContext,
-    _options: FlagEvaluationOptions | undefined,
+    _options: FlagEvaluationOptions | undefined
   ): Promise<ResolutionDetails<U>> {
     const details = await this.evaluate(flagKey, transformedContext, defaultValue as any)
     if (typeof details.value === 'string') {
@@ -197,13 +199,13 @@ export class PostHogProvider implements Provider {
   private async evaluate(
     flagKey: string,
     defaultValue: any,
-    context: EvaluationContext,
+    context: EvaluationContext
   ): Promise<ResolutionDetails<boolean | string | number>> {
     if (!context.distinctId) {
       return {
         value: defaultValue,
         errorCode: FlagError.MISSING_DISTINCT_ID,
-        reason: FlagResolution.DEFAULT,
+        reason: StandardResolutionReasons.DEFAULT,
       }
     }
 
@@ -213,7 +215,7 @@ export class PostHogProvider implements Provider {
     } catch (err: unknown) {
       return {
         value: defaultValue,
-        reason: FlagResolution.DEFAULT,
+        reason: StandardResolutionReasons.ERROR,
         errorCode: FlagError.SYSTEM_ERROR,
       }
     }
@@ -227,11 +229,14 @@ export class PostHogProvider implements Provider {
     return `Flag value ${flagKey} had unexpected type ${typeof value}, expected ${expectedType}.`
   }
 
+  /**
+   * @inheritDoc
+   */
   private async getFeatureFlag(
     flagKey: string,
     distinctId: string,
     defaultValue: boolean | string | number,
-    context?: PosthogInfo,
+    context?: PosthogInfo
   ): Promise<ResolutionDetails<boolean | string | number>> {
     let isSuccessful = false
     let flagValue: boolean | string | number = defaultValue
@@ -257,7 +262,7 @@ export class PostHogProvider implements Provider {
       if (!response.ok) {
         return {
           value: defaultValue,
-          reason: FlagResolution.DEFAULT,
+          reason: StandardResolutionReasons.ERROR,
           errorCode: FlagError.SYSTEM_ERROR,
         }
       }
@@ -270,7 +275,7 @@ export class PostHogProvider implements Provider {
         } else {
           return {
             value: defaultValue,
-            reason: FlagResolution.DEFAULT,
+            reason: StandardResolutionReasons.DEFAULT,
             errorCode: FlagError.MISSING_FEATURE_FLAG,
           }
         }
@@ -279,14 +284,14 @@ export class PostHogProvider implements Provider {
       } else {
         return {
           value: defaultValue,
-          reason: FlagResolution.DEFAULT,
+          reason: StandardResolutionReasons.ERROR,
           errorCode: FlagError.MISSING_FEATURE_FLAG,
         }
       }
     } catch (err: unknown) {
       return {
         value: defaultValue,
-        reason: FlagResolution.DEFAULT,
+        reason: StandardResolutionReasons.ERROR,
         errorCode: FlagError.SYSTEM_ERROR,
       }
     }
@@ -307,7 +312,7 @@ export class PostHogProvider implements Provider {
     return {
       value: flagValue,
       ...(typeof flagValue === 'string' ? { variant: flagValue } : undefined),
-      reason: FlagResolution.TARGETING_MATCH,
+      reason: StandardResolutionReasons.TARGETING_MATCH,
     }
   }
 }
