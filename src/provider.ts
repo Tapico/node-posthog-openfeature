@@ -9,12 +9,11 @@ import {
   ParseError,
   StandardResolutionReasons,
 } from '@openfeature/nodejs-sdk'
-import PostHog from 'posthog-node'
-import * as undici from 'undici'
+import { PostHogGlobal,  type PostHogOptions } from 'posthog-node'
 import { FlagError } from './types'
 import { VERSION } from './VERSION'
 
-type Groups = Record<string, string | number>
+type Groups =  Record<string, string>
 
 type PosthogInfo = {
   /**
@@ -35,30 +34,22 @@ type PosthogInfo = {
   context?: Omit<EvaluationContext, 'targetingKey'>
 }
 
+export type PartialPosthogOptions = Omit<PostHogOptions, 'enable'>
+
 /**
  * PostHog provider options
  */
 export interface PostHogProviderOptions extends ProviderOptions<PosthogInfo> {
-  /**
-   * The personal API key used for evaluating feature flags
-   */
-  personalApiKey: string
-  /**
-   * The project API key used for events
-   */
+
+   /**
+    * The project API key used for events
+    */
   apiKey: string
+
   /**
-   * Sets the host of the PostHog service
+   *
    */
-  host?: string
-  /**
-   * Interval for refreshing feature flags in seconds
-   */
-  featureFlagsPollingInterval?: number
-  /**
-   * Send feature flag event when flag is getting queries
-   */
-  sendFeatureFlagEvent?: boolean
+  config?: PartialPosthogOptions
 }
 
 /**
@@ -78,30 +69,30 @@ const DEFAULT_CONTEXT_TRANSFORMER = (context: EvaluationContext): PosthogInfo =>
  */
 export class PostHogProvider implements Provider {
   readonly metadata = {
-    name: 'PostHog Provider',
+    name: `posthog-provider`,
+    version: VERSION
   } as const
   private readonly clientOptions: PostHogProviderOptions
 
   readonly contextTransformer: ContextTransformer<PosthogInfo>
-  private client: PostHog
+  private client: PostHogGlobal
 
   constructor(options: PostHogProviderOptions) {
     this.contextTransformer = options.contextTransformer || DEFAULT_CONTEXT_TRANSFORMER
-    // TODO
-    if (!options.personalApiKey && options.personalApiKey.length > 0) {
-      throw new Error(`Missing required 'personalApiKey' in provider configuration`)
-    }
 
-    if (!options.apiKey && options.apiKey.length > 0) {
+    if (!options.apiKey) {
       throw new Error(`Missing required 'apiKey' in provider configuration`)
     }
 
     this.clientOptions = options
-    this.client = new PostHog(this.clientOptions.apiKey, {
-      host: this.clientOptions.host,
-      personalApiKey: this.clientOptions.personalApiKey,
-      featureFlagsPollingInterval: options.featureFlagsPollingInterval,
-    })
+    const posthogOptions = {
+      // preloadFeatureFlags: true,
+      // sendFeatureFlagEvent: true,
+      // decidePollInterval: 100,
+      ...(options?.config ?? {})
+    }
+
+    this.client = new PostHogGlobal(this.clientOptions.apiKey, posthogOptions)
   }
 
   /**
@@ -211,6 +202,14 @@ export class PostHogProvider implements Provider {
 
     try {
       const result = await this.getFeatureFlag(flagKey, context.distinctId as string, defaultValue)
+      // when we receive undefined then the feature flag doesn't exist
+      if (!result) {
+        return {
+          value: defaultValue,
+          reason: StandardResolutionReasons.ERROR,
+          errorCode: FlagError.MISSING_FEATURE_FLAG,
+        }
+      }
       return result
     } catch (err: unknown) {
       return {
@@ -238,81 +237,32 @@ export class PostHogProvider implements Provider {
     defaultValue: boolean | string | number,
     context?: PosthogInfo
   ): Promise<ResolutionDetails<boolean | string | number>> {
-    let isSuccessful = false
+    console.log(`getFeatureFlag() flagKey: ${flagKey} distinctId: ${distinctId}`)
+
     let flagValue: boolean | string | number = defaultValue
-    const apiHost = this.clientOptions.host ?? 'https://app.posthog.com'
-    const apiUrl = `${apiHost}/decide?v=2`
     try {
-      const requestBody = {
-        token: this.clientOptions.apiKey,
-        distinct_id: distinctId,
-        groups: context?.groups,
-      }
-
-      const response = await undici.fetch(apiUrl, {
-        method: 'POST',
-        body: JSON.stringify(requestBody),
-        headers: {
-          'user-agent': `openfeature-posthog/${VERSION}`,
-          'Content-Type': 'application/json',
-          Authorization: `Bearer ${this.clientOptions.personalApiKey}`,
-        },
-      })
-
-      if (!response.ok) {
+      const featureFlagResponse = await this.client.getFeatureFlag(flagKey, distinctId, context?.groups)
+      console.log(`Received featureFlagResponse:`, featureFlagResponse)
+      if (!featureFlagResponse) {
         return {
           value: defaultValue,
-          reason: StandardResolutionReasons.ERROR,
+          reason: StandardResolutionReasons.DEFAULT,
           errorCode: FlagError.SYSTEM_ERROR,
         }
       }
 
-      const json: any = await response.json()
-      const featureFlags = json.featureFlags
-      if (featureFlags) {
-        if (featureFlags.hasOwnProperty(flagKey)) {
-          flagValue = featureFlags[flagKey]
-        } else {
-          return {
-            value: defaultValue,
-            reason: StandardResolutionReasons.DEFAULT,
-            errorCode: FlagError.MISSING_FEATURE_FLAG,
-          }
-        }
-
-        isSuccessful = true
-      } else {
-        return {
-          value: defaultValue,
-          reason: StandardResolutionReasons.ERROR,
-          errorCode: FlagError.MISSING_FEATURE_FLAG,
-        }
+      return {
+        value: flagValue,
+        ...(typeof flagValue === 'string' ? { variant: flagValue } : undefined),
+        reason: StandardResolutionReasons.TARGETING_MATCH,
       }
     } catch (err: unknown) {
+      console.log(`Error:`, err)
       return {
         value: defaultValue,
         reason: StandardResolutionReasons.ERROR,
         errorCode: FlagError.SYSTEM_ERROR,
       }
-    }
-
-    // Ensure we trigger an event when feature flag is queried
-    if (isSuccessful && this.clientOptions.sendFeatureFlagEvent === true) {
-      this.client.capture({
-        distinctId: distinctId,
-        event: '$feature_flag_called',
-        properties: {
-          $feature_flag: flagKey,
-          $feature_flag_response: flagValue,
-        },
-      })
-    }
-
-    //
-    return {
-      value: flagValue,
-      ...(typeof flagValue === 'string' ? { variant: flagValue } : undefined),
-      reason: StandardResolutionReasons.TARGETING_MATCH,
     }
   }
 }

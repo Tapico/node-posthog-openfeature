@@ -10,21 +10,21 @@ export class LoggingHook implements Hook {
   constructor() {}
 
   before(hookContext: HookContext, _hookHints: HookHints) {
-    console.log(`Running 'before' logger hook for flag: ${hookContext.flagKey}`)
-    console.log(JSON.stringify(hookContext.context, undefined, 2))
+    // console.log(`Running 'before' logger hook for flag: ${hookContext.flagKey}`)
+    // console.log(JSON.stringify(hookContext.context, undefined, 2))
   }
 
   after(hookContext: HookContext, details: ResolutionDetails<FlagValue>, _hookHints: HookHints) {
-    console.log(`Running 'after' logger hook for flag: ${hookContext.flagKey}`)
-    console.log(`Evaluation details:${EOL}${JSON.stringify(details, undefined, 2)}`)
+    // console.log(`Running 'after' logger hook for flag: ${hookContext.flagKey}`)
+    // console.log(`Evaluation details:${EOL}${JSON.stringify(details, undefined, 2)}`)
   }
 
   finally(hookContext: HookContext, _hookHints: HookHints) {
-    console.log(`Running 'finally' logger hook for flag: ${hookContext.flagKey}`)
+    // console.log(`Running 'finally' logger hook for flag: ${hookContext.flagKey}`)
   }
 
   error(hookContext: HookContext, error: Error, _hookHints: HookHints) {
-    console.log(`Running 'error' logger hook for flag: ${hookContext.flagKey}`)
-    console.error(error)
+    // console.log(`Running 'error' logger hook for flag: ${hookContext.flagKey}`)
+    // console.error(error)
   }
 }
