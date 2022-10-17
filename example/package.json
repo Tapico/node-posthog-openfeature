@@ -7,12 +7,12 @@
   "scripts": {
     "build": "tsc",
     "watch": "tsc --watch",
-    "dev": "node ./dist/index.js",
+    "dev": "node ./dist/example/index.js",
     "test": "echo \"Error: no test specified\" && exit 1"
   },
   "devDependencies": {
     "@tapico/node-openfeature": "file:..",
-    "typescript": "4.7.4"
+    "typescript": "4.8.4"
   },
   "keywords": [],
   "author": "Tapico",

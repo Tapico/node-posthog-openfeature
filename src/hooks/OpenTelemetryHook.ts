@@ -1,14 +1,14 @@
-import type {
+import {
   FlagValue,
   Hook,
   HookContext,
   HookHints,
   ResolutionDetails,
-} from '@openfeature/nodejs-sdk'
+  StandardResolutionReasons,
+} from '@openfeature/js-sdk'
 import { Span, trace, Tracer } from '@opentelemetry/api'
 import { Counter, Meter, metrics, ValueType } from '@opentelemetry/api-metrics'
-import { FlagResolution } from '../types'
-import { VERSION } from '../VERSION'
+import { VERSION } from '../VERSION.js'
 
 export const FeatureFlagAttributes = {
   FLAG_KEY: 'feature_flag.flag_key',
@@ -89,7 +89,7 @@ export class OpenTelemetryHook implements Hook {
 
     this.metricFlags.add(1, {
       [FeatureFlagMetricAttributes.FLAG_KEY]: hookContext.flagKey,
-      [FeatureFlagMetricAttributes.REASON]: flagValue.reason ?? FlagResolution.UNKNOWN,
+      [FeatureFlagMetricAttributes.REASON]: flagValue.reason ?? StandardResolutionReasons.UNKNOWN,
       [FeatureFlagMetricAttributes.PROVIDER_NAME]: hookContext.providerMetadata.name,
     })
   }

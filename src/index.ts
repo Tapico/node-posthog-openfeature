@@ -1,3 +1,3 @@
-export * from './provider'
-export * from './hooks'
-export * from './VERSION'
+export * from './provider.js'
+export * from './hooks/index.js'
+export * from './VERSION.js'

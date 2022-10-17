@@ -1,10 +1,10 @@
-import { OpenFeature } from '@openfeature/nodejs-sdk'
-import { PostHogProvider, OpenTelemetryHook, LoggingHook, ContextHook } from '../src'
+import { OpenFeature } from '@openfeature/js-sdk'
+import { PostHogProvider, OpenTelemetryHook, LoggingHook, ContextHook } from '../src/index.js'
 
 OpenFeature.addHooks(
-  // new LoggingHook(),
-  // new OpenTelemetryHook('service-name'),
-  // new ContextHook()
+  new LoggingHook(),
+  new OpenTelemetryHook('service-name'),
+  new ContextHook()
 )
 
 async function start() {
@@ -12,14 +12,13 @@ async function start() {
 
   OpenFeature.setProvider(
     new PostHogProvider({
-      apiKey: process.env.POSTHOG_API_KEY,
-      personalApiKey: process.env.POSTHOG_API_KEY,
-      // apiKey: process.env.POSTHOG_API_KEY,
-      // personalApiKey: process.env.POSTHOG_PERSONAL_API_KEY,
-      config: {
-        decidePollInterval: 0,
-        preloadFeatureFlags: true,
-        sendFeatureFlagEvent: true,
+      posthogConfiguration: {
+        apiKey: process.env.POSTHOG_API_KEY,
+        personalApiKey: process.env.POSTHOG_PERSONAL_API_KEY,
+        evaluateLocally: true,
+        clientOptions: {
+          sendFeatureFlagEvent: true,
+        }
       }
     }),
   )
@@ -50,7 +49,22 @@ async function start() {
     targetingKey,
   })
   console.log(`\n\nstringResultDetails:`, stringVariant)
+
+  const booleanResultDetails2 = await client.getBooleanDetails('dummy2', true, {
+    targetingKey,
+    groups: { "account-servicer": '123456789' },
+    personalProperties: {
+      "email": "weyert@mailbox.com"
+    },
+    groupProperties: {
+      name: 'Weyert',
+    }
+  })
+  console.log(`\nbooleanResultDetails2:`, booleanResultDetails2)
+
 }
+
+
 
 await start()
 

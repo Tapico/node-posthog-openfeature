@@ -1,4 +1,4 @@
-import type { FlagValue, Hook, HookContext, HookHints, ResolutionDetails } from '@openfeature/nodejs-sdk'
+import type { FlagValue, Hook, HookContext, HookHints, ResolutionDetails } from '@openfeature/js-sdk'
 
 /**
  * A hook that injects feature flag information in
