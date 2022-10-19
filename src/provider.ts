@@ -12,7 +12,7 @@ import {
   Logger,
 } from '@openfeature/js-sdk'
 import { PostHog, type PostHogOptions } from 'posthog-node'
-import { FlagError } from './types.js'
+import { FlagError } from './types'
 
 type PosthogInfo = {
   /**
