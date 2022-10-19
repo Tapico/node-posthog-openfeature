@@ -54,10 +54,10 @@ async function start() {
     targetingKey,
     groups: { "account-servicer": '123456789' },
     personalProperties: {
-      "email": "weyert@mailbox.com"
+      "email": "jose@mailbox.com"
     },
     groupProperties: {
-      name: 'Weyert',
+      name: 'José',
     }
   })
   console.log(`\nbooleanResultDetails2:`, booleanResultDetails2)

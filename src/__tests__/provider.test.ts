@@ -1,4 +1,4 @@
-import { Client, OpenFeature, StandardResolutionReasons } from '@openfeature/nodejs-sdk'
+import { Client, OpenFeature, StandardResolutionReasons } from '@openfeature/js-sdk'
 import { PostHog } from 'posthog-node'
 import { PostHogProvider } from '../provider'
 
