@@ -106,8 +106,7 @@ export class PostHogProvider implements Provider {
       this.client = options.posthogClient
       this.evaluateLocally = options.posthogConfiguration?.evaluateLocally ?? false
     } else if (options.posthogConfiguration) {
-      const { apiKey, personalApiKey, evaluateLocally, clientOptions } =
-        options.posthogConfiguration
+      const { apiKey, personalApiKey, evaluateLocally, clientOptions } = options.posthogConfiguration
       if (!apiKey) {
         throw new Error(`Missing the PostHog 'apiKey' is not given`)
       }
@@ -118,19 +117,13 @@ export class PostHogProvider implements Provider {
 
       this.evaluateLocally = evaluateLocally ?? false
 
-      this.client = new PostHog(
-        apiKey,
-        this.createPosthogClientConfig(personalApiKey, clientOptions)
-      )
+      this.client = new PostHog(apiKey, this.createPosthogClientConfig(personalApiKey, clientOptions))
     } else {
       throw new Error(`Failed to intialise PostHog OpenFeature provider`)
     }
   }
 
-  private createPosthogClientConfig(
-    personalApiKey: string,
-    config?: PosthogClientOptions
-  ): PostHogOptions {
+  private createPosthogClientConfig(personalApiKey: string, config?: PosthogClientOptions): PostHogOptions {
     return {
       personalApiKey: personalApiKey,
       ...config,
@@ -154,7 +147,7 @@ export class PostHogProvider implements Provider {
     flagKey: string,
     defaultValue: boolean,
     context: EvaluationContext,
-    _logger: Logger
+    _logger: Logger,
   ): Promise<ResolutionDetails<boolean>> {
     const details = await this.evaluate(flagKey, defaultValue, context)
     if (typeof details.value === 'boolean') {
@@ -185,7 +178,7 @@ export class PostHogProvider implements Provider {
     flagKey: string,
     defaultValue: string,
     context: EvaluationContext,
-    _logger: Logger
+    _logger: Logger,
   ): Promise<ResolutionDetails<string>> {
     const details = await this.evaluate(flagKey, defaultValue, context)
     if (typeof details.value === 'string') {
@@ -216,7 +209,7 @@ export class PostHogProvider implements Provider {
     flagKey: string,
     defaultValue: number,
     context: EvaluationContext,
-    _logger: Logger
+    _logger: Logger,
   ): Promise<ResolutionDetails<number>> {
     const details = await this.evaluate(flagKey, defaultValue, context)
     if (typeof details.value === 'number') {
@@ -230,7 +223,7 @@ export class PostHogProvider implements Provider {
     }
   }
 
-	  /**
+  /**
    * Determines the object variation of a feature flag for a context, along with information about
    * how it was calculated.
    *
@@ -245,7 +238,7 @@ export class PostHogProvider implements Provider {
     flagKey: string,
     defaultValue: U,
     context: EvaluationContext,
-    _logger: Logger
+    _logger: Logger,
   ): Promise<ResolutionDetails<U>> {
     const details = await this.evaluate(flagKey, context, defaultValue as any)
     if (typeof details.value === 'string') {
@@ -270,7 +263,7 @@ export class PostHogProvider implements Provider {
   private async evaluate(
     flagKey: string,
     defaultValue: any,
-    context: EvaluationContext
+    context: EvaluationContext,
   ): Promise<ResolutionDetails<boolean | string | number>> {
     const translatedContext = this.translateContext(context)
 
@@ -297,14 +290,14 @@ export class PostHogProvider implements Provider {
         return {
           value: defaultValue,
           reason: StandardResolutionReasons.DEFAULT,
-          errorCode: ErrorCode.FLAG_NOT_FOUND
+          errorCode: ErrorCode.FLAG_NOT_FOUND,
         }
       }
 
       return {
         value: flagResult,
         reason: StandardResolutionReasons.DEFAULT,
-        errorCode: ErrorCode.FLAG_NOT_FOUND
+        errorCode: ErrorCode.FLAG_NOT_FOUND,
       }
     } catch (err: unknown) {
       return {
@@ -321,7 +314,7 @@ export class PostHogProvider implements Provider {
   private translateContext(evalContext: EvaluationContext): any {
     const { targetingKey } = evalContext
     return {
-      targetingKey
+      targetingKey,
     }
   }
 
@@ -337,6 +330,6 @@ export class PostHogProvider implements Provider {
    * @inheritDoc
    */
   get hooks(): Hook<FlagValue>[] {
-    return [];
+    return []
   }
 }

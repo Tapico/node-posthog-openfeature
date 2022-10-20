@@ -11,7 +11,7 @@ describe('PostHogProvider', () => {
         apiKey: 'api-key',
         personalApiKey: 'personal-api-key',
         evaluateLocally: true,
-      }
+      },
     })
 
     beforeAll(() => {
@@ -64,11 +64,16 @@ describe('PostHogProvider', () => {
         client = OpenFeature.getClient('posthog', '1.0.0')
       }
 
-      const evaluatedFlagResult = await client.getBooleanDetails('feature-flag', true, { targetingKey: 'distinct-id' }, {
-        hookHints: {
-          'hintInfo': 'information'
-        }
-      })
+      const evaluatedFlagResult = await client.getBooleanDetails(
+        'feature-flag',
+        true,
+        { targetingKey: 'distinct-id' },
+        {
+          hookHints: {
+            hintInfo: 'information',
+          },
+        },
+      )
       expect(evaluatedFlagResult.flagKey).toBe('feature-flag')
       expect(evaluatedFlagResult.reason).toBe(StandardResolutionReasons.DEFAULT)
       expect(evaluatedFlagResult.value).toBe(true)

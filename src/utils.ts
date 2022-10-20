@@ -1,4 +1,4 @@
-import { ParseError, TypeMismatchError } from "@openfeature/nodejs-sdk"
+import { ParseError, TypeMismatchError } from '@openfeature/nodejs-sdk'
 
 /**
  *

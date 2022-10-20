@@ -1,11 +1,7 @@
 import { OpenFeature } from '@openfeature/js-sdk'
 import { PostHogProvider, OpenTelemetryHook, LoggingHook, ContextHook } from '../src/index.js'
 
-OpenFeature.addHooks(
-  new LoggingHook(),
-  new OpenTelemetryHook('service-name'),
-  new ContextHook()
-)
+OpenFeature.addHooks(new LoggingHook(), new OpenTelemetryHook('service-name'), new ContextHook())
 
 async function start() {
   const targetingKey = '1d52644f-92e5-4f5a-a8c0-ed591488360b'
@@ -18,8 +14,8 @@ async function start() {
         evaluateLocally: true,
         clientOptions: {
           sendFeatureFlagEvent: true,
-        }
-      }
+        },
+      },
     }),
   )
   const client = OpenFeature.getClient('posthog', '1.0.0', {
@@ -52,19 +48,16 @@ async function start() {
 
   const booleanResultDetails2 = await client.getBooleanDetails('dummy2', true, {
     targetingKey,
-    groups: { "account-servicer": '123456789' },
+    groups: { 'account-servicer': '123456789' },
     personalProperties: {
-      "email": "jose@mailbox.com"
+      email: 'jose@mailbox.com',
     },
     groupProperties: {
       name: 'José',
-    }
+    },
   })
   console.log(`\nbooleanResultDetails2:`, booleanResultDetails2)
-
 }
-
-
 
 await start()
 

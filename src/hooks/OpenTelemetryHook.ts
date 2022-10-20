@@ -74,9 +74,7 @@ export class OpenTelemetryHook implements Hook {
     if (flagValue.variant) {
       this.spanMap.get(hookContext)?.setAttribute(FeatureFlagAttributes.VARIANT, flagValue.variant)
     } else {
-      this.spanMap
-        .get(hookContext)
-        ?.setAttribute(FeatureFlagAttributes.VALUE, JSON.stringify(flagValue.value))
+      this.spanMap.get(hookContext)?.setAttribute(FeatureFlagAttributes.VALUE, JSON.stringify(flagValue.value))
     }
 
     if (flagValue.errorCode) {
