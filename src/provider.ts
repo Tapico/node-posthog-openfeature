@@ -97,7 +97,6 @@ export class PostHogProvider implements Provider {
   private readonly evaluateLocally: boolean
 
   constructor(options: PostHogProviderOptions) {
-    console.log(`PostHogProvider() options:`, options)
     if (!options.posthogClient && !options.posthogConfiguration) {
       throw new Error(`The 'posthogClient' or 'posthogConfiguration' should be given`)
     }
