@@ -14,6 +14,7 @@ import {
 import { PostHog, type PostHogOptions } from 'posthog-node'
 import { FlagError } from './types'
 
+// eslint-disable-next-line @typescript-eslint/no-unused-vars
 type PosthogInfo = {
   /**
    * Targeting key or unique identifier to use for
