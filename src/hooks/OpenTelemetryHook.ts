@@ -6,8 +6,7 @@ import {
   ResolutionDetails,
   StandardResolutionReasons,
 } from '@openfeature/js-sdk'
-import { Span, trace, Tracer } from '@opentelemetry/api'
-import { Counter, Meter, metrics, ValueType } from '@opentelemetry/api-metrics'
+import { Span, trace, Tracer, Counter, Meter, metrics, ValueType } from '@opentelemetry/api'
 import { VERSION } from '../VERSION.js'
 
 export const FeatureFlagAttributes = {
