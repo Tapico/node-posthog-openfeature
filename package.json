@@ -55,7 +55,7 @@
   },
   "dependencies": {
     "@openfeature/js-sdk": "1.1.0",
-    "posthog-node": "2.5.0",
+    "posthog-node": "2.5.1",
     "@opentelemetry/api": ">=1.4.0"
   },
   "peerDependencies": {
