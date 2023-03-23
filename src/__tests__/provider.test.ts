@@ -1,4 +1,4 @@
-import { Client, OpenFeature, StandardResolutionReasons } from '@openfeature/js-sdk'
+import { Client, ErrorCode, OpenFeature } from '@openfeature/js-sdk'
 import { PostHog } from 'posthog-node'
 import { PostHogProvider } from '../provider'
 
@@ -59,24 +59,166 @@ describe('PostHogProvider', () => {
       expect(OpenFeature.providerMetadata.name).toBe('posthog-provider')
     })
 
-    test('should return resolution result indicating flag does not exist', async () => {
-      if (!client) {
-        client = OpenFeature.getClient('posthog', '1.0.0')
-      }
+    test("should return resolution result with default value when PostHog returns 'undefined'", async () => {
+      const mockFeatureFlag = jest.spyOn(posthogClient, 'getFeatureFlag').mockImplementationOnce(() => {
+        return Promise.resolve(undefined)
+      })
 
-      const evaluatedFlagResult = await client.getBooleanDetails(
-        'feature-flag',
-        true,
-        { targetingKey: 'distinct-id' },
-        {
-          hookHints: {
-            hintInfo: 'information',
+      client = OpenFeature.getClient('posthog', '1.0.0')
+
+      const evaluatedFlagResult = await client.getBooleanDetails('dummy2', false, {
+        targetingKey: 'targeting-key',
+      })
+
+      expect(mockFeatureFlag).toHaveBeenCalledTimes(1)
+      expect(evaluatedFlagResult).toBeDefined()
+      expect(evaluatedFlagResult.flagKey).toBe('dummy2')
+      expect(evaluatedFlagResult.errorCode).toBe(ErrorCode.FLAG_NOT_FOUND)
+      expect(evaluatedFlagResult.value).toBe(false)
+    })
+
+    test("should return resolution result with flag value when PostHog returns 'false'", async () => {
+      const mockFeatureFlag = jest.spyOn(posthogClient, 'getFeatureFlag').mockImplementationOnce(() => {
+        return Promise.resolve(true)
+      })
+
+      client = OpenFeature.getClient('posthog', '1.0.0')
+
+      const evaluatedFlagResult = await client.getBooleanDetails('dummy2', true, {
+        targetingKey: 'targeting-key',
+      })
+
+      expect(mockFeatureFlag).toHaveBeenCalledTimes(1)
+      expect(evaluatedFlagResult).toBeDefined()
+      expect(evaluatedFlagResult.flagKey).toBe('dummy2')
+      expect(evaluatedFlagResult.errorCode).toBeUndefined()
+      expect(evaluatedFlagResult.value).toBe(true)
+    })
+
+    test("should return resolution result with flag value when PostHog returns 'true'", async () => {
+      const mockFeatureFlag = jest.spyOn(posthogClient, 'getFeatureFlag').mockImplementationOnce(() => {
+        return Promise.resolve(false)
+      })
+
+      client = OpenFeature.getClient('posthog', '1.0.0')
+
+      const evaluatedFlagResult = await client.getBooleanDetails('dummy2', true, {
+        targetingKey: 'targeting-key',
+      })
+
+      expect(mockFeatureFlag).toHaveBeenCalledTimes(1)
+      expect(evaluatedFlagResult).toBeDefined()
+      expect(evaluatedFlagResult.flagKey).toBe('dummy2')
+      expect(evaluatedFlagResult.errorCode).toBeUndefined()
+      expect(evaluatedFlagResult.value).toBe(false)
+    })
+
+    test('should pass groups to PostHog when defined in evalation context', async () => {
+      const mockFeatureFlag = jest.spyOn(posthogClient, 'getFeatureFlag').mockImplementationOnce((...args: any[]) => {
+        return Promise.resolve(false)
+      })
+
+      client = OpenFeature.getClient('posthog', '1.0.0')
+
+      const evaluatedFlagResult = await client.getBooleanDetails('dummy2', true, {
+        targetingKey: 'targeting-key',
+        groups: { group1: 'hello' },
+      })
+
+      expect(mockFeatureFlag).toHaveBeenCalledTimes(1)
+      expect(mockFeatureFlag).toHaveBeenCalledWith(
+        'dummy2',
+        'targeting-key',
+        expect.objectContaining({ groups: { group1: 'hello' } }),
+      )
+      expect(evaluatedFlagResult).toBeDefined()
+      expect(evaluatedFlagResult.flagKey).toBe('dummy2')
+      expect(evaluatedFlagResult.errorCode).toBeUndefined()
+      expect(evaluatedFlagResult.value).toBe(false)
+    })
+
+    test('should pass personalProperties to PostHog when defined in evalation context', async () => {
+      const mockFeatureFlag = jest.spyOn(posthogClient, 'getFeatureFlag').mockImplementationOnce((...args: any[]) => {
+        return Promise.resolve(false)
+      })
+
+      client = OpenFeature.getClient('posthog', '1.0.0')
+
+      const evaluatedFlagResult = await client.getBooleanDetails('dummy2', true, {
+        targetingKey: 'targeting-key',
+        context: {
+          personProperties: {
+            userId: 'developer',
           },
         },
+      })
+
+      expect(mockFeatureFlag).toHaveBeenCalledTimes(1)
+      expect(mockFeatureFlag).toHaveBeenCalledWith(
+        'dummy2',
+        'targeting-key',
+        expect.objectContaining({ personProperties: { userId: 'developer' } }),
       )
-      expect(evaluatedFlagResult.flagKey).toBe('feature-flag')
-      expect(evaluatedFlagResult.reason).toBe(StandardResolutionReasons.DEFAULT)
-      expect(evaluatedFlagResult.value).toBe(true)
+      expect(evaluatedFlagResult).toBeDefined()
+      expect(evaluatedFlagResult.flagKey).toBe('dummy2')
+      expect(evaluatedFlagResult.errorCode).toBeUndefined()
+      expect(evaluatedFlagResult.value).toBe(false)
+    })
+
+    test('should pass groupProperties to PostHog when defined in evalation context', async () => {
+      const mockFeatureFlag = jest.spyOn(posthogClient, 'getFeatureFlag').mockImplementationOnce((...args: any[]) => {
+        return Promise.resolve(false)
+      })
+
+      client = OpenFeature.getClient('posthog', '1.0.0')
+
+      const evaluatedFlagResult = await client.getBooleanDetails('dummy2', true, {
+        targetingKey: 'targeting-key',
+        context: {
+          groupProperties: {
+            userId: 'developer',
+          },
+        },
+      })
+
+      expect(mockFeatureFlag).toHaveBeenCalledTimes(1)
+      expect(mockFeatureFlag).toHaveBeenCalledWith(
+        'dummy2',
+        'targeting-key',
+        expect.objectContaining({ groupProperties: { userId: 'developer' } }),
+      )
+      expect(evaluatedFlagResult).toBeDefined()
+      expect(evaluatedFlagResult.flagKey).toBe('dummy2')
+      expect(evaluatedFlagResult.errorCode).toBeUndefined()
+      expect(evaluatedFlagResult.value).toBe(false)
+    })
+
+    test('should be able to retrieve JSON feature flag value', async () => {
+      const mockFeatureFlag = jest.spyOn(posthogClient, 'getFeatureFlag').mockImplementationOnce((...args: any[]) => {
+        return Promise.resolve(true)
+      })
+      const mockFeatureFlagPayload = jest
+        .spyOn(posthogClient, 'getFeatureFlagPayload')
+        .mockImplementationOnce((...args: any[]) => {
+          return Promise.resolve({ mocked: 'feature-flag-value' })
+        })
+
+      client = OpenFeature.getClient('posthog', '1.0.0')
+
+      const evaluatedFlagResult = await client.getObjectDetails(
+        'dummy5',
+        { payload: 'from-unit-test' },
+        {
+          targetingKey: 'service',
+        },
+      )
+
+      expect(mockFeatureFlag).toHaveBeenCalledTimes(1)
+      expect(mockFeatureFlag).toHaveBeenCalledWith('dummy5', 'service', expect.objectContaining({}))
+      expect(evaluatedFlagResult).toBeDefined()
+      expect(evaluatedFlagResult.flagKey).toBe('dummy5')
+      expect(evaluatedFlagResult.errorCode).toBeUndefined()
+      expect(evaluatedFlagResult.value).toStrictEqual(expect.objectContaining({ mocked: 'feature-flag-value' }))
     })
   })
 })
