@@ -1,0 +1,16 @@
+apiVersion: backstage.io/v1alpha1
+kind: Component
+metadata:
+  name: node-posthog-openfeature
+  title: node-posthog-openfeature
+  description: OpenFeature provider for the PostHog feature flags solution
+  annotations:
+    github.com/project-slug: node-posthog-openfeature
+    backstage.io/adr-location: docs/adrs
+    backstage.io/techdocs-ref: dir:.
+  tags:
+    - posthog
+spec:
+  type: service
+  owner: engineering
+  lifecycle: experimental
