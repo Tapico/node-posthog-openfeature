@@ -3,7 +3,6 @@ import {
   Provider,
   ResolutionDetails,
   TypeMismatchError,
-  ParseError,
   StandardResolutionReasons,
   Hook,
   FlagValue,
@@ -14,12 +13,13 @@ import {
 import { PostHog, type PostHogOptions } from 'posthog-node'
 import { FlagError } from './types'
 
-type PosthogInfo = {
+export type PosthogInfo = {
   /**
    * Targeting key or unique identifier to use for
    * evaluating the feature flag
    */
-  distinctId?: string
+  targetingKey?: string
+
   /**
    * Define the groups to use when evaulating
    * the feture flags,
@@ -32,13 +32,20 @@ type PosthogInfo = {
    * the feature flag
    */
   context?: Omit<EvaluationContext, 'targetingKey'> & {
-    groupProperties?: Record<string, string>
-    personalProperties?: Record<string, Record<string, string>>
+    /**
+     * @optional
+     */
+    groupProperties?: Record<string, Record<string, string>>
+    /**
+     * @optional
+     */
+    personProperties?: Record<string, string>
   }
 }
 
 /**
- *
+ * @public
+ * All supported PostHog client options that can be passed to the provider
  */
 export type PosthogClientOptions = Omit<PostHogOptions, 'enable' | 'personalApiKey'>
 
@@ -61,6 +68,11 @@ export type PosthogConfiguration = {
    * If true, the provider will evaluate the feature flags locally instead of via the decide-remote call
    */
   evaluateLocally?: boolean
+
+  /**
+   * If true, the provider will be running in debug mode
+   */
+  debugMode?: boolean
 
   /**
    * PostHog client options
@@ -95,6 +107,7 @@ export class PostHogProvider implements Provider {
 
   private readonly client: PostHog
   private readonly evaluateLocally: boolean
+  private readonly debugMode: boolean
 
   constructor(options: PostHogProviderOptions) {
     if (!options.posthogClient && !options.posthogConfiguration) {
@@ -104,6 +117,7 @@ export class PostHogProvider implements Provider {
     if (options.posthogClient) {
       this.client = options.posthogClient
       this.evaluateLocally = options.posthogConfiguration?.evaluateLocally ?? false
+      this.debugMode = options.posthogConfiguration?.debugMode ?? false
     } else if (options.posthogConfiguration) {
       const { apiKey, personalApiKey, evaluateLocally, clientOptions } = options.posthogConfiguration
       if (!apiKey) {
@@ -115,18 +129,25 @@ export class PostHogProvider implements Provider {
       }
 
       this.evaluateLocally = evaluateLocally ?? false
+      this.debugMode = options.posthogConfiguration?.debugMode ?? false
 
       this.client = new PostHog(apiKey, this.createPosthogClientConfig(personalApiKey, clientOptions))
     } else {
       throw new Error(`Failed to intialise PostHog OpenFeature provider`)
     }
+
+    // Enable debug mode in posthog provider to ease debugging when needed :)
+    if (this.client && this.debugMode) {
+      this.client.debug(true)
+    }
   }
 
   private createPosthogClientConfig(personalApiKey: string, config?: PosthogClientOptions): PostHogOptions {
-    return {
+    const posthogConfig = {
       personalApiKey: personalApiKey,
       ...config,
     }
+    return posthogConfig
   }
 
   /**
@@ -137,18 +158,18 @@ export class PostHogProvider implements Provider {
    *
    * @param flagKey The unique key of the feature flag.
    * @param defaultValue The default value of the flag, to be used if the value is not available
-   *   from LaunchDarkly.
+   *   from PostHog.
    * @param context The context requesting the flag. The client will generate an analytics event to
-   *   register this context with LaunchDarkly if the context does not already exist.
+   *   register this context with PostHog if the context does not already exist.
    * @returns A promise which will resolve to a ResolutionDetails.
    */
   async resolveBooleanEvaluation(
     flagKey: string,
     defaultValue: boolean,
     context: EvaluationContext,
-    _logger: Logger,
+    logger: Logger,
   ): Promise<ResolutionDetails<boolean>> {
-    const details = await this.evaluate(flagKey, defaultValue, context)
+    const details = await this.evaluate(flagKey, defaultValue, context, logger)
     if (typeof details.value === 'boolean') {
       const value = details.value
       return {
@@ -168,18 +189,18 @@ export class PostHogProvider implements Provider {
    *
    * @param flagKey The unique key of the feature flag.
    * @param defaultValue The default value of the flag, to be used if the value is not available
-   *   from LaunchDarkly.
+   *   from PostHog.
    * @param context The context requesting the flag. The client will generate an analytics event to
-   *   register this context with LaunchDarkly if the context does not already exist.
+   *   register this context with PostHog if the context does not already exist.
    * @returns A promise which will resolve to a ResolutionDetails.
    */
   async resolveStringEvaluation(
     flagKey: string,
     defaultValue: string,
     context: EvaluationContext,
-    _logger: Logger,
+    logger: Logger,
   ): Promise<ResolutionDetails<string>> {
-    const details = await this.evaluate(flagKey, defaultValue, context)
+    const details = await this.evaluate(flagKey, defaultValue, context, logger)
     if (typeof details.value === 'string') {
       const value = details.value
       return {
@@ -199,18 +220,18 @@ export class PostHogProvider implements Provider {
    *
    * @param flagKey The unique key of the feature flag.
    * @param defaultValue The default value of the flag, to be used if the value is not available
-   *   from LaunchDarkly.
+   *   from PostHog.
    * @param context The context requesting the flag. The client will generate an analytics event to
-   *   register this context with LaunchDarkly if the context does not already exist.
+   *   register this context with PostHog if the context does not already exist.
    * @returns A promise which will resolve to a ResolutionDetails.
    */
   async resolveNumberEvaluation(
     flagKey: string,
     defaultValue: number,
     context: EvaluationContext,
-    _logger: Logger,
+    logger: Logger,
   ): Promise<ResolutionDetails<number>> {
-    const details = await this.evaluate(flagKey, defaultValue, context)
+    const details = await this.evaluate(flagKey, defaultValue, context, logger)
     if (typeof details.value === 'number') {
       const value = details.value
       return {
@@ -228,25 +249,24 @@ export class PostHogProvider implements Provider {
    *
    * @param flagKey The unique key of the feature flag.
    * @param defaultValue The default value of the flag, to be used if the value is not available
-   *   from LaunchDarkly.
+   *   from PostHog.
    * @param context The context requesting the flag. The client will generate an analytics event to
-   *   register this context with LaunchDarkly if the context does not already exist.
+   *   register this context with PostHog if the context does not already exist.
    * @returns A promise which will resolve to a ResolutionDetails.
    */
   async resolveObjectEvaluation<U extends JsonValue>(
     flagKey: string,
     defaultValue: U,
     context: EvaluationContext,
-    _logger: Logger,
+    logger: Logger,
   ): Promise<ResolutionDetails<U>> {
-    const details = await this.evaluate(flagKey, context, defaultValue as any)
-    if (typeof details.value === 'string') {
-      try {
-        return {
-          value: JSON.parse(details.value),
-        }
-      } catch (err: unknown) {
-        throw new ParseError(`Error parsing flag value for ${flagKey}`)
+    const details = await this.evaluatePayload(flagKey, defaultValue as any, context, logger)
+
+    if (typeof details.value === 'object') {
+      return {
+        ...details,
+        value: details.value as U,
+        reason: StandardResolutionReasons.TARGETING_MATCH,
       }
     } else {
       throw new TypeMismatchError(this.getFlagTypeErrorMessage(flagKey, details.value, 'object'))
@@ -255,18 +275,23 @@ export class PostHogProvider implements Provider {
 
   /**
    * @internal
-   * @param flagKey the unique name of the feature flag
-   * @param PosthogInfo the user identifier
-   * @returns ResolutionDetails
+   * Retrieves the payload of the feature flag
    */
-  private async evaluate(
+  private async evaluatePayload(
     flagKey: string,
     defaultValue: any,
     context: EvaluationContext,
-  ): Promise<ResolutionDetails<boolean | string | number>> {
+    logger: Logger,
+  ): Promise<ResolutionDetails<JsonValue>> {
     const translatedContext = this.translateContext(context)
 
     if (!translatedContext.targetingKey) {
+      if (typeof (translatedContext as any)['distinctId'] !== 'undefined') {
+        logger.warn(
+          `You are mixing 'targetingKey' and 'distinctId' fields in the evaluation context. Please avoid using 'distinctId'.`,
+        )
+      }
+
       return {
         value: defaultValue,
         errorCode: ErrorCode.GENERAL,
@@ -275,17 +300,37 @@ export class PostHogProvider implements Provider {
     }
 
     try {
-      const flagResult = await this.client.getFeatureFlag(flagKey, translatedContext.distinctId, {
+      const flagContext: {
+        groups?: Record<string, string>
+        groupProperties?: Record<string, Record<string, string>>
+        personProperties?: Record<string, string>
+      } = {}
+      if (translatedContext.groups) {
+        flagContext.groups = translatedContext.groups
+      }
+      if (translatedContext.context?.personProperties) {
+        flagContext.personProperties = translatedContext.context.personProperties
+      }
+      if (translatedContext.context?.groupProperties) {
+        flagContext.groupProperties = translatedContext.context.groupProperties
+      }
+
+      const flagConfig = {
         onlyEvaluateLocally: this.evaluateLocally,
         sendFeatureFlagEvents: true,
-        //
-        // groups?: Record<string, string>;
-        // personProperties?: Record<string, string>;
-        // groupProperties?: Record<string, Record<string, string>>;
-      })
+        ...flagContext,
+      }
+      const flagResult = await this.client.getFeatureFlag(flagKey, translatedContext.targetingKey, flagConfig)
+
+      const flagPayloadResult = await this.client.getFeatureFlagPayload(
+        flagKey,
+        translatedContext.targetingKey,
+        undefined,
+        flagConfig,
+      )
 
       // If the flagResult is undefined,meaning the flag doesn't exist or failed
-      if (!flagResult) {
+      if (typeof flagResult === 'undefined') {
         return {
           value: defaultValue,
           reason: StandardResolutionReasons.DEFAULT,
@@ -294,9 +339,8 @@ export class PostHogProvider implements Provider {
       }
 
       return {
-        value: flagResult,
-        reason: StandardResolutionReasons.DEFAULT,
-        errorCode: ErrorCode.FLAG_NOT_FOUND,
+        value: flagPayloadResult as JsonValue,
+        reason: StandardResolutionReasons.TARGETING_MATCH,
       }
     } catch (err: unknown) {
       return {
@@ -308,12 +352,127 @@ export class PostHogProvider implements Provider {
   }
 
   /**
+   * @internal
+   * Returns the value of the given feature flag
+   * @param flagKey the unique name of the feature flag
+   * @param PosthogInfo the user identifier
+   * @returns ResolutionDetails
+   */
+  private async evaluate(
+    flagKey: string,
+    defaultValue: any,
+    context: EvaluationContext,
+    logger: Logger,
+  ): Promise<ResolutionDetails<boolean | string | number>> {
+    const translatedContext = this.translateContext(context)
+
+    if (!translatedContext.targetingKey) {
+      if (typeof (translatedContext as any)['distinctId'] !== 'undefined') {
+        logger.warn(
+          `You are mixing 'targetingKey' and 'distinctId' fields in the evaluation context. Please avoid using 'distinctId'.`,
+        )
+      }
+
+      return {
+        value: defaultValue,
+        errorCode: ErrorCode.GENERAL,
+        reason: FlagError.MISSING_DISTINCT_ID,
+      }
+    }
+
+    try {
+      const flagContext: {
+        groups?: Record<string, string>
+        groupProperties?: Record<string, Record<string, string>>
+        personProperties?: Record<string, string>
+      } = {}
+      if (translatedContext.groups) {
+        flagContext.groups = translatedContext.groups
+      }
+      if (translatedContext.context?.personProperties) {
+        flagContext.personProperties = translatedContext.context.personProperties
+      }
+      if (translatedContext.context?.groupProperties) {
+        flagContext.groupProperties = translatedContext.context.groupProperties
+      }
+
+      const flagConfig = {
+        onlyEvaluateLocally: this.evaluateLocally,
+        sendFeatureFlagEvents: true,
+        ...flagContext,
+      }
+      const flagResult = await this.client.getFeatureFlag(flagKey, translatedContext.targetingKey, flagConfig)
+
+      // If the flagResult is undefined,meaning the flag doesn't exist or failed
+      if (typeof flagResult === 'undefined') {
+        return {
+          value: defaultValue,
+          reason: StandardResolutionReasons.DEFAULT,
+          errorCode: ErrorCode.FLAG_NOT_FOUND,
+        }
+      }
+
+      return {
+        value: flagResult,
+        reason: StandardResolutionReasons.TARGETING_MATCH,
+      }
+    } catch (err: unknown) {
+      return {
+        value: defaultValue,
+        reason: StandardResolutionReasons.ERROR,
+        errorCode: ErrorCode.GENERAL,
+      }
+    }
+  }
+
+  private validateSchema(object: any): boolean {
+    if (Array.isArray(object)) {
+      return false
+    }
+
+    return Object.values(object).every(x => {
+      if (typeof x === 'object') {
+        return this.validateSchema(x)
+      } else {
+        return typeof x === 'string'
+      }
+    })
+  }
+
+  /**
    * @protected
    */
-  private translateContext(evalContext: EvaluationContext): any {
-    const { targetingKey } = evalContext
+  private translateContext(evalContext: PosthogInfo): PosthogInfo {
+    const { targetingKey, groups, context } = evalContext
+
+    if (groups) {
+      const isGroupsValid = this.validateSchema(groups)
+      if (!isGroupsValid) {
+        throw new Error(`An invalid evaluation context value was given for 'groups'`)
+      }
+    }
+
+    if (context && context.personProperties) {
+      const isValid = this.validateSchema(context.personProperties)
+      if (!isValid) {
+        throw new Error(`An invalid evaluation context value was given for 'context.personProperties'`)
+      }
+    }
+
+    if (context && context.groupProperties) {
+      const isValid = this.validateSchema(context.groupProperties)
+      if (!isValid) {
+        throw new Error(`An invalid evaluation context value was given for 'context.groupProperties'`)
+      }
+    }
+
     return {
       targetingKey,
+      ...(groups ? { groups: groups as any } : {}),
+      context: {
+        ...(context?.groupProperties ? { groupProperties: context.groupProperties } : {}),
+        ...(context?.personProperties ? { personProperties: context.personProperties } : {}),
+      },
     }
   }
 

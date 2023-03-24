@@ -7,7 +7,7 @@
   "scripts": {
     "build": "tsc",
     "watch": "tsc --watch",
-    "dev": "node ./dist/example/index.js",
+    "dev": "node --watch ./dist/example/index.js",
     "test": "echo \"Error: no test specified\" && exit 1"
   },
   "devDependencies": {
