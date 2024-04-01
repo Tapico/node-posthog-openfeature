@@ -96,7 +96,7 @@ jobs:
           release-type: node
 
       - name: Publish package to NPM
-        if: ${{ steps.release.outputs.release_created }}
+        # if: ${{ steps.release.outputs.release_created }}
         shell: bash
         run: |
           pnpm publish --access public
