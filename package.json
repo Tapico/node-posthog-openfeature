@@ -65,12 +65,9 @@
     "@opentelemetry/api": "^1.8.0"
   },
   "engines": {
-    "node": ">=14.16"
-  },
-  "volta": {
-    "extends": "../../package.json"
+    "node": ">=20.12.0"
   },
   "publishConfig": {
-    "@tapico:registry": "https://europe-west2-npm.pkg.dev/tapico-global/tapico/"
+    "@tapico:registry": "https://registry.npmjs.org/"
   }
 }
