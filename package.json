@@ -1,6 +1,6 @@
 {
   "name": "@tapico/node-openfeature-posthog",
-  "version": "0.20.0",
+  "version": "1.0.0",
   "description": "OpenFeature provider for the PostHog feature flags solution",
   "private": false,
   "author": "Tapico <engineering@tapico.io>",
