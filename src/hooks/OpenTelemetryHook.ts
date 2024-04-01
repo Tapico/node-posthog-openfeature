@@ -1,14 +1,9 @@
-/* eslint-disable @typescript-eslint/no-unused-vars */
-import {
-  FlagValue,
-  Hook,
-  HookContext,
-  HookHints,
-  ResolutionDetails,
-  StandardResolutionReasons,
-} from '@openfeature/js-sdk'
-import { Span, trace, Tracer, Counter, Meter, metrics, ValueType } from '@opentelemetry/api'
+import { StandardResolutionReasons } from '@openfeature/server-sdk'
+import { trace, metrics, ValueType } from '@opentelemetry/api'
 import { VERSION } from '../VERSION.js'
+import type { Span, Tracer, Counter, Meter } from '@opentelemetry/api'
+import type { FlagValue, Hook, HookContext, HookHints, ResolutionDetails } from '@openfeature/server-sdk'
+import '@openfeature/core'
 
 export const FeatureFlagAttributes = {
   FLAG_KEY: 'feature_flag.flag_key',
@@ -80,7 +75,7 @@ export class OpenTelemetryHook implements Hook {
     if (flagValue.errorCode) {
       this.metricFailedFlags.add(1, {
         [FeatureFlagMetricAttributes.FLAG_KEY]: hookContext.flagKey,
-        [FeatureFlagMetricAttributes.ERROR_CODE]: flagValue.errorCode ?? 'unknown',
+        [FeatureFlagMetricAttributes.ERROR_CODE]: flagValue.errorCode,
         [FeatureFlagMetricAttributes.PROVIDER_NAME]: hookContext.providerMetadata.name,
       })
     }
