@@ -1,16 +1,7 @@
-import {
-  EvaluationContext,
-  Provider,
-  ResolutionDetails,
-  TypeMismatchError,
-  StandardResolutionReasons,
-  Hook,
-  FlagValue,
-  ErrorCode,
-  JsonValue,
-  Logger,
-} from '@openfeature/js-sdk'
-import { PostHog, type PostHogOptions } from 'posthog-node'
+import type { EvaluationContext, Provider, ResolutionDetails, Hook, JsonValue, Logger } from '@openfeature/server-sdk'
+import { TypeMismatchError, StandardResolutionReasons, ErrorCode } from '@openfeature/server-sdk'
+import { PostHog } from 'posthog-node'
+import type { PostHogOptions } from 'posthog-node'
 import { FlagError } from './types'
 
 export type PosthogInfo = {
@@ -144,7 +135,7 @@ export class PostHogProvider implements Provider {
 
   private createPosthogClientConfig(personalApiKey: string, config?: PosthogClientOptions): PostHogOptions {
     const posthogConfig = {
-      personalApiKey: personalApiKey,
+      personalApiKey,
       ...config,
     }
     return posthogConfig
@@ -286,7 +277,7 @@ export class PostHogProvider implements Provider {
     const translatedContext = this.translateContext(context)
 
     if (!translatedContext.targetingKey) {
-      if (typeof (translatedContext as any)['distinctId'] !== 'undefined') {
+      if (typeof (translatedContext as any).distinctId !== 'undefined') {
         logger.warn(
           `You are mixing 'targetingKey' and 'distinctId' fields in the evaluation context. Please avoid using 'distinctId'.`,
         )
@@ -367,7 +358,7 @@ export class PostHogProvider implements Provider {
     const translatedContext = this.translateContext(context)
 
     if (!translatedContext.targetingKey) {
-      if (typeof (translatedContext as any)['distinctId'] !== 'undefined') {
+      if (typeof (translatedContext as any).distinctId !== 'undefined') {
         logger.warn(
           `You are mixing 'targetingKey' and 'distinctId' fields in the evaluation context. Please avoid using 'distinctId'.`,
         )
@@ -430,7 +421,7 @@ export class PostHogProvider implements Provider {
       return false
     }
 
-    return Object.values(object).every(x => {
+    return Object.values(object as object).every(x => {
       if (typeof x === 'object') {
         return this.validateSchema(x)
       } else {
@@ -485,9 +476,18 @@ export class PostHogProvider implements Provider {
   }
 
   /**
+   * @inheritdoc
+   */
+  async onClose?(): Promise<void> {
+    if (this.client) {
+      await this.client.shutdown()
+    }
+  }
+
+  /**
    * @inheritDoc
    */
-  get hooks(): Hook<FlagValue>[] {
+  get hooks(): Hook[] {
     return []
   }
 }

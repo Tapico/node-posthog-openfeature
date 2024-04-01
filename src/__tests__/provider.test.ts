@@ -1,6 +1,7 @@
-import { Client, ErrorCode, OpenFeature } from '@openfeature/js-sdk'
+import { ErrorCode, OpenFeature } from '@openfeature/server-sdk'
 import { PostHog } from 'posthog-node'
 import { PostHogProvider } from '../provider'
+import type { Client } from '@openfeature/server-sdk'
 
 jest.mock('posthog-node')
 
@@ -39,7 +40,7 @@ describe('PostHogProvider', () => {
     })
 
     const provider = new PostHogProvider({
-      posthogClient: posthogClient,
+      posthogClient,
     })
 
     beforeAll(() => {
@@ -60,9 +61,7 @@ describe('PostHogProvider', () => {
     })
 
     test("should return resolution result with default value when PostHog returns 'undefined'", async () => {
-      const mockFeatureFlag = jest.spyOn(posthogClient, 'getFeatureFlag').mockImplementationOnce(() => {
-        return Promise.resolve(undefined)
-      })
+      const mockFeatureFlag = jest.spyOn(posthogClient, 'getFeatureFlag').mockResolvedValueOnce(undefined)
 
       client = OpenFeature.getClient('posthog', '1.0.0')
 
@@ -78,9 +77,7 @@ describe('PostHogProvider', () => {
     })
 
     test("should return resolution result with flag value when PostHog returns 'false'", async () => {
-      const mockFeatureFlag = jest.spyOn(posthogClient, 'getFeatureFlag').mockImplementationOnce(() => {
-        return Promise.resolve(true)
-      })
+      const mockFeatureFlag = jest.spyOn(posthogClient, 'getFeatureFlag').mockResolvedValueOnce(true)
 
       client = OpenFeature.getClient('posthog', '1.0.0')
 
@@ -96,9 +93,7 @@ describe('PostHogProvider', () => {
     })
 
     test("should return resolution result with flag value when PostHog returns 'true'", async () => {
-      const mockFeatureFlag = jest.spyOn(posthogClient, 'getFeatureFlag').mockImplementationOnce(() => {
-        return Promise.resolve(false)
-      })
+      const mockFeatureFlag = jest.spyOn(posthogClient, 'getFeatureFlag').mockResolvedValueOnce(false)
 
       client = OpenFeature.getClient('posthog', '1.0.0')
 
@@ -114,7 +109,7 @@ describe('PostHogProvider', () => {
     })
 
     test('should pass groups to PostHog when defined in evalation context', async () => {
-      const mockFeatureFlag = jest.spyOn(posthogClient, 'getFeatureFlag').mockImplementationOnce((...args: any[]) => {
+      const mockFeatureFlag = jest.spyOn(posthogClient, 'getFeatureFlag').mockImplementationOnce((..._args: any[]) => {
         return Promise.resolve(false)
       })
 
@@ -138,7 +133,7 @@ describe('PostHogProvider', () => {
     })
 
     test('should pass personalProperties to PostHog when defined in evalation context', async () => {
-      const mockFeatureFlag = jest.spyOn(posthogClient, 'getFeatureFlag').mockImplementationOnce((...args: any[]) => {
+      const mockFeatureFlag = jest.spyOn(posthogClient, 'getFeatureFlag').mockImplementationOnce((..._args: any[]) => {
         return Promise.resolve(false)
       })
 
@@ -166,7 +161,7 @@ describe('PostHogProvider', () => {
     })
 
     test('should pass groupProperties to PostHog when defined in evalation context', async () => {
-      const mockFeatureFlag = jest.spyOn(posthogClient, 'getFeatureFlag').mockImplementationOnce((...args: any[]) => {
+      const mockFeatureFlag = jest.spyOn(posthogClient, 'getFeatureFlag').mockImplementationOnce((..._args: any[]) => {
         return Promise.resolve(false)
       })
 
@@ -194,12 +189,12 @@ describe('PostHogProvider', () => {
     })
 
     test('should be able to retrieve JSON feature flag value', async () => {
-      const mockFeatureFlag = jest.spyOn(posthogClient, 'getFeatureFlag').mockImplementationOnce((...args: any[]) => {
+      const mockFeatureFlag = jest.spyOn(posthogClient, 'getFeatureFlag').mockImplementationOnce((..._args: any[]) => {
         return Promise.resolve(true)
       })
       const mockFeatureFlagPayload = jest
         .spyOn(posthogClient, 'getFeatureFlagPayload')
-        .mockImplementationOnce((...args: any[]) => {
+        .mockImplementationOnce((..._args: any[]) => {
           return Promise.resolve({ mocked: 'feature-flag-value' })
         })
 
@@ -215,6 +210,7 @@ describe('PostHogProvider', () => {
 
       expect(mockFeatureFlag).toHaveBeenCalledTimes(1)
       expect(mockFeatureFlag).toHaveBeenCalledWith('dummy5', 'service', expect.objectContaining({}))
+      expect(mockFeatureFlagPayload).toHaveBeenCalledTimes(1)
       expect(evaluatedFlagResult).toBeDefined()
       expect(evaluatedFlagResult.flagKey).toBe('dummy5')
       expect(evaluatedFlagResult.errorCode).toBeUndefined()

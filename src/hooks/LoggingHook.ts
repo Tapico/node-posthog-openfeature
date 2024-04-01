@@ -1,5 +1,6 @@
-import type { Hook, HookContext, ResolutionDetails, FlagValue } from '@openfeature/js-sdk'
+/* eslint-disable no-console */
 import { EOL } from 'os'
+import type { Hook, HookContext, ResolutionDetails, FlagValue } from '@openfeature/server-sdk'
 
 /**
  * A hook that simply logs at every life-cycle stage.

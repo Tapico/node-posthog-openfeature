@@ -1,4 +1,4 @@
-import { OpenFeature } from '@openfeature/js-sdk'
+import { OpenFeature } from '@openfeature/server-sdk'
 import { PostHogProvider, OpenTelemetryHook, LoggingHook } from '../src/index.js'
 
 OpenFeature.addHooks(new LoggingHook(), new OpenTelemetryHook('service-name'))
