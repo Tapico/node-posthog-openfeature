@@ -1,5 +1,12 @@
 # Changelog
 
+## [1.1.0](https://github.com/Tapico/node-posthog-openfeature/compare/v1.0.0...v1.1.0) (2024-04-13)
+
+
+### Features
+
+* **deps:** upgrade OpenFeature and PostHog dependencies ([#13](https://github.com/Tapico/node-posthog-openfeature/issues/13)) ([4f88003](https://github.com/Tapico/node-posthog-openfeature/commit/4f8800322e1bc39a3916e2e2f8e0b3ab673b028c))
+
 ## 1.0.0 (2024-04-01)
 
 
