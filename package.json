@@ -43,8 +43,8 @@
     "lint": "TIMING=1 eslint src/**/*.ts* --fix",
     "test": "jest",
     "version": "pnpm run version:update",
-    "prepublish": "pnpm run version:update",
-    "version:update": "node ./scripts/version-update.js"
+    "version:update": "node ./scripts/version-update.js",
+    "prepublishOnly": "pnpm run test && pnpm run version:update && pnpm run build"
   },
   "dependencies": {
     "@openfeature/core": "^1.1.0",
