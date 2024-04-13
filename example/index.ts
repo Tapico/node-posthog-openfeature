@@ -1,5 +1,5 @@
 import { OpenFeature } from '@openfeature/server-sdk'
-import { PostHogProvider, OpenTelemetryHook, LoggingHook } from '../src/index.js'
+import { PostHogProvider, OpenTelemetryHook, LoggingHook } from '@tapico/node-openfeature'
 
 OpenFeature.addHooks(new LoggingHook(), new OpenTelemetryHook('service-name'))
 
