@@ -1,5 +1,12 @@
 # Changelog
 
+## [1.1.2](https://github.com/Tapico/node-posthog-openfeature/compare/v1.1.1...v1.1.2) (2024-04-13)
+
+
+### Bug Fixes
+
+* update github workflows ([#17](https://github.com/Tapico/node-posthog-openfeature/issues/17)) ([1b86e9a](https://github.com/Tapico/node-posthog-openfeature/commit/1b86e9aff1edddf673721b4d51792ce89e9d298f))
+
 ## [1.1.1](https://github.com/Tapico/node-posthog-openfeature/compare/v1.1.0...v1.1.1) (2024-04-13)
 
 
