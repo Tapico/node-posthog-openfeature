@@ -2,7 +2,7 @@ import { StandardResolutionReasons } from '@openfeature/server-sdk'
 import { trace, metrics, ValueType } from '@opentelemetry/api'
 import { VERSION } from '../VERSION.js'
 import type { Span, Tracer, Counter, Meter } from '@opentelemetry/api'
-import type { FlagValue, Hook, HookContext, HookHints, ResolutionDetails } from '@openfeature/server-sdk'
+import type { FlagValue, Hook, HookContext, ResolutionDetails } from '@openfeature/server-sdk'
 import '@openfeature/core'
 
 export const FeatureFlagAttributes = {
@@ -52,7 +52,7 @@ export class OpenTelemetryHook implements Hook {
     })
   }
 
-  before(hookContext: HookContext, _hookHints: HookHints) {
+  before(hookContext: HookContext) {
     const span = this.tracer.startSpan(`feature flag - ${hookContext.flagValueType}`)
     span.setAttributes({
       [FeatureFlagAttributes.FLAG_KEY]: hookContext.flagKey,
@@ -65,7 +65,7 @@ export class OpenTelemetryHook implements Hook {
     return hookContext.context
   }
 
-  after(hookContext: HookContext, flagValue: ResolutionDetails<FlagValue>, _hookHints: HookHints) {
+  after(hookContext: HookContext, flagValue: ResolutionDetails<FlagValue>) {
     if (flagValue.variant) {
       this.spanMap.get(hookContext)?.setAttribute(FeatureFlagAttributes.VARIANT, flagValue.variant)
     } else {
@@ -87,11 +87,11 @@ export class OpenTelemetryHook implements Hook {
     })
   }
 
-  finally(hookContext: HookContext, _hookHints: HookHints) {
+  finally(hookContext: HookContext) {
     this.spanMap.get(hookContext)?.end()
   }
 
-  error(hookContext: HookContext, error: Error, _hookHints: HookHints) {
+  error(hookContext: HookContext, error: Error) {
     this.spanMap.get(hookContext)?.recordException(error)
   }
 }

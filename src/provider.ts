@@ -131,7 +131,16 @@ export class PostHogProvider implements Provider {
     if (this.client && this.debugMode) {
       this.client.debug(true)
     }
+
+    this.setupEventListeners()
   }
+
+  /**
+   * @private
+   * Register event listerns to the PostHog client to manage the internal state
+   * of the provider
+   */
+  private setupEventListeners() {}
 
   private createPosthogClientConfig(personalApiKey: string, config?: PosthogClientOptions): PostHogOptions {
     const posthogConfig = {

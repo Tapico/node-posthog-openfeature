@@ -109,6 +109,7 @@ describe('PostHogProvider', () => {
     })
 
     test('should pass groups to PostHog when defined in evalation context', async () => {
+      // eslint-disable-next-line @typescript-eslint/no-unused-vars
       const mockFeatureFlag = jest.spyOn(posthogClient, 'getFeatureFlag').mockImplementationOnce((..._args: any[]) => {
         return Promise.resolve(false)
       })
@@ -133,6 +134,7 @@ describe('PostHogProvider', () => {
     })
 
     test('should pass personalProperties to PostHog when defined in evalation context', async () => {
+      // eslint-disable-next-line @typescript-eslint/no-unused-vars
       const mockFeatureFlag = jest.spyOn(posthogClient, 'getFeatureFlag').mockImplementationOnce((..._args: any[]) => {
         return Promise.resolve(false)
       })
@@ -161,6 +163,7 @@ describe('PostHogProvider', () => {
     })
 
     test('should pass groupProperties to PostHog when defined in evalation context', async () => {
+      // eslint-disable-next-line @typescript-eslint/no-unused-vars
       const mockFeatureFlag = jest.spyOn(posthogClient, 'getFeatureFlag').mockImplementationOnce((..._args: any[]) => {
         return Promise.resolve(false)
       })
@@ -189,11 +192,13 @@ describe('PostHogProvider', () => {
     })
 
     test('should be able to retrieve JSON feature flag value', async () => {
+      // eslint-disable-next-line @typescript-eslint/no-unused-vars
       const mockFeatureFlag = jest.spyOn(posthogClient, 'getFeatureFlag').mockImplementationOnce((..._args: any[]) => {
         return Promise.resolve(true)
       })
       const mockFeatureFlagPayload = jest
         .spyOn(posthogClient, 'getFeatureFlagPayload')
+        // eslint-disable-next-line @typescript-eslint/no-unused-vars
         .mockImplementationOnce((..._args: any[]) => {
           return Promise.resolve({ mocked: 'feature-flag-value' })
         })
