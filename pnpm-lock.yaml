@@ -10,7 +10,7 @@ dependencies:
     version: 1.2.0
   '@openfeature/server-sdk':
     specifier: ^1.13.4
-    version: 1.13.5(@openfeature/core@1.2.0)
+    version: 1.14.0(@openfeature/core@1.2.0)
   '@opentelemetry/api':
     specifier: ^1.8.0
     version: 1.8.0
@@ -967,11 +967,11 @@ packages:
     resolution: {integrity: sha512-JyIiije5f+8Big1xz7UAmxqVmHBuFUI9Dh8DEFG2D1ocgjMm1tEzYXJDr3urCQGNnX9M/cYtNhEcGfyontIgJw==}
     dev: false
 
-  /@openfeature/server-sdk@1.13.5(@openfeature/core@1.2.0):
-    resolution: {integrity: sha512-7cF/0BL4kFixehZWrX5cZMAxYCGmEYMKJqCv6wx+kiOJ+CAhStIXmDA5mmyvoLSLAAmng5a4AAxW1D4BTQycQw==}
-    engines: {node: '>=16'}
+  /@openfeature/server-sdk@1.14.0(@openfeature/core@1.2.0):
+    resolution: {integrity: sha512-PGPI6OZdyAy2FZVUiH1suw/WuWZJsIlK2xd1KbRl5rlMLawYk2bKGBGgZYX9rcozsGKOZM6/vaFjCSB6QCjCfw==}
+    engines: {node: '>=18'}
     peerDependencies:
-      '@openfeature/core': 1.1.0
+      '@openfeature/core': 1.2.0
     dependencies:
       '@openfeature/core': 1.2.0
     dev: false
