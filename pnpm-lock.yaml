@@ -7,10 +7,10 @@ settings:
 dependencies:
   '@openfeature/core':
     specifier: ^1.1.0
-    version: 1.1.0
+    version: 1.2.0
   '@openfeature/server-sdk':
     specifier: ^1.13.4
-    version: 1.13.5(@openfeature/core@1.1.0)
+    version: 1.13.5(@openfeature/core@1.2.0)
   '@opentelemetry/api':
     specifier: ^1.8.0
     version: 1.8.0
@@ -963,17 +963,17 @@ packages:
       fastq: 1.17.1
     dev: true
 
-  /@openfeature/core@1.1.0:
-    resolution: {integrity: sha512-aNuvOmqrFxAyzLnEa3YINsUu1pskXyEeMu4O9Kyde0+cS7q+Tgh4KKePwAROXkhhU1RQckW931P41xK5osXAWA==}
+  /@openfeature/core@1.2.0:
+    resolution: {integrity: sha512-JyIiije5f+8Big1xz7UAmxqVmHBuFUI9Dh8DEFG2D1ocgjMm1tEzYXJDr3urCQGNnX9M/cYtNhEcGfyontIgJw==}
     dev: false
 
-  /@openfeature/server-sdk@1.13.5(@openfeature/core@1.1.0):
+  /@openfeature/server-sdk@1.13.5(@openfeature/core@1.2.0):
     resolution: {integrity: sha512-7cF/0BL4kFixehZWrX5cZMAxYCGmEYMKJqCv6wx+kiOJ+CAhStIXmDA5mmyvoLSLAAmng5a4AAxW1D4BTQycQw==}
     engines: {node: '>=16'}
     peerDependencies:
       '@openfeature/core': 1.1.0
     dependencies:
-      '@openfeature/core': 1.1.0
+      '@openfeature/core': 1.2.0
     dev: false
 
   /@opentelemetry/api@1.8.0:
