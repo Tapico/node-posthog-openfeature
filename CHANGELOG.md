@@ -1,5 +1,15 @@
 # Changelog
 
+## [1.1.3](https://github.com/Tapico/node-posthog-openfeature/compare/v1.1.2...v1.1.3) (2024-06-08)
+
+
+### Bug Fixes
+
+* **deps:** update dependency @openfeature/core to v1.2.0 ([b3aeb30](https://github.com/Tapico/node-posthog-openfeature/commit/b3aeb30a09e1e9dfd4277c71d10b9c300407fd50))
+* **deps:** update dependency @openfeature/server-sdk to v1.13.5 ([802111d](https://github.com/Tapico/node-posthog-openfeature/commit/802111dfc68a487e2bbb5eb4d0d2c631c73ee10d))
+* **deps:** update dependency @openfeature/server-sdk to v1.14.0 ([e79df4d](https://github.com/Tapico/node-posthog-openfeature/commit/e79df4d75815c7fda2937aa67955e20d55af1aac))
+* **deps:** update dependency posthog-node to v4.0.1 ([33aad7e](https://github.com/Tapico/node-posthog-openfeature/commit/33aad7e3259abc3789c15d6f03a0c21aacda6d28))
+
 ## [1.1.2](https://github.com/Tapico/node-posthog-openfeature/compare/v1.1.1...v1.1.2) (2024-04-13)
 
 
