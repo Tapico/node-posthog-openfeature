@@ -19,6 +19,6 @@
   "devDependencies": {
     "@tapico/node-openfeature": "file:..",
     "@types/node": "^20.12.7",
-    "typescript": "5.5.2"
+    "typescript": "5.5.3"
   }
 }
