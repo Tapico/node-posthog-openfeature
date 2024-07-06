@@ -4,8 +4,10 @@
     "config:recommended",
     ":automergeTypes",
     ":automergeStableNonMajor",
+    ":semanticCommitType(fix)",
     "npm:unpublishSafe"
   ],
   "ignoreTests": true,
-  "semanticCommits": "enabled"
+  "semanticCommits": "enabled",
+  "separateMajorMinor": true
 }
